@@ -1,0 +1,6 @@
+/gpm
+/gpm.test
+*.test
+dist/
+/.gpm-dev/
+/bin/
