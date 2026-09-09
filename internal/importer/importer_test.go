@@ -136,8 +136,12 @@ func TestDetectSingleCandidateWithGlobalIdentity(t *testing.T) {
 	os.MkdirAll(filepath.Join(home, ".ssh"), 0o700)
 	os.WriteFile(filepath.Join(home, ".ssh", "config"), []byte(sshCfg), 0o600)
 
+	// Forward slashes: inside quoted gitconfig values git treats
+	// backslashes as escape sequences, so real configs always render
+	// slashed paths there.
 	gitCfg := "[user]\n\tname = Jane Doe\n\temail = jane@corp.com\n" +
-		`[includeIf "gitdir:` + home + `/works/corp/"]` + "\n\tpath = " + home + `/.config/gpm/gitconfig/work` + "\n"
+		"[includeIf \"gitdir:" + filepath.ToSlash(home) + "/works/corp/\"]\n\tpath = \"" +
+		filepath.ToSlash(home) + "/.config/gpm/gitconfig/work\"\n"
 	os.WriteFile(filepath.Join(home, ".gitconfig"), []byte(gitCfg), 0o644)
 
 	// The includeIf target is a pre-existing file with the account email.
