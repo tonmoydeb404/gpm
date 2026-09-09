@@ -14,9 +14,18 @@ dependencies beyond `git` and `ssh` themselves.
 
 ## Install
 
-Grab a prebuilt binary from
-[Releases](https://github.com/tonmoydeb404/gpm/releases) — no Go
-required:
+One line — no Go required:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/tonmoydeb404/gpm/main/install.sh | sh
+```
+
+The script detects your OS/architecture, downloads the latest release
+binary, and installs it to `/usr/local/bin` (set `GPM_INSTALL_DIR` to
+choose another location).
+
+Prefer manual steps? Grab a tarball from
+[Releases](https://github.com/tonmoydeb404/gpm/releases):
 
 ```sh
 # macOS (Apple Silicon)
