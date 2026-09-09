@@ -6,11 +6,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/dirs"
-	"github.com/tonmoydeb/gpm/internal/gitcmd"
-	"github.com/tonmoydeb/gpm/internal/guard"
-	"github.com/tonmoydeb/gpm/internal/resolve"
+	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/dirs"
+	"github.com/tonmoydeb404/gpm/internal/gitcmd"
+	"github.com/tonmoydeb404/gpm/internal/guard"
+	"github.com/tonmoydeb404/gpm/internal/resolve"
 )
 
 func newGuardCmd() *cobra.Command {

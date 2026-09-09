@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tonmoydeb/gpm/internal/dirs"
-	"github.com/tonmoydeb/gpm/internal/importer"
+	"github.com/tonmoydeb404/gpm/internal/dirs"
+	"github.com/tonmoydeb404/gpm/internal/importer"
 )
 
 // scanScreen turns a scan report into a menu with follow-up actions.

@@ -15,13 +15,13 @@ dependencies beyond `git` and `ssh` themselves.
 ## Install
 
 ```sh
-go install github.com/tonmoydeb/gpm/cmd/gpm@latest
+go install github.com/tonmoydeb404/gpm/cmd/gpm@latest
 ```
 
 or build from source:
 
 ```sh
-git clone https://github.com/tonmoydeb/gpm && cd gpm
+git clone https://github.com/tonmoydeb404/gpm && cd gpm
 go build -o /usr/local/bin/gpm ./cmd/gpm
 ```
 

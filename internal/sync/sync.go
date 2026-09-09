@@ -6,9 +6,9 @@
 package sync
 
 import (
-	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/gitconfig"
-	"github.com/tonmoydeb/gpm/internal/sshconfig"
+	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/gitconfig"
+	"github.com/tonmoydeb404/gpm/internal/sshconfig"
 )
 
 // All saves the config and regenerates every managed artifact.

@@ -12,8 +12,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/sshkey"
+	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/sshkey"
 )
 
 // ValidateName checks that a username is usable.

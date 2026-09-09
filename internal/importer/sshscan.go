@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/tonmoydeb/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/config"
 )
 
 // maxIncludeDepthSSH caps ssh config Include chains.

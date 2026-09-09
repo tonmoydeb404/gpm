@@ -6,11 +6,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/gitprofile"
-	"github.com/tonmoydeb/gpm/internal/managed"
-	"github.com/tonmoydeb/gpm/internal/sshkey"
-	"github.com/tonmoydeb/gpm/internal/sshprofile"
+	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/gitprofile"
+	"github.com/tonmoydeb404/gpm/internal/managed"
+	"github.com/tonmoydeb404/gpm/internal/sshkey"
+	"github.com/tonmoydeb404/gpm/internal/sshprofile"
 )
 
 func testHome(t *testing.T) string {

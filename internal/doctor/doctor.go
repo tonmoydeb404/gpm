@@ -9,17 +9,17 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/tonmoydeb/gpm/internal/auth"
-	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/dirs"
-	"github.com/tonmoydeb/gpm/internal/gitcmd"
-	"github.com/tonmoydeb/gpm/internal/gitconfig"
-	"github.com/tonmoydeb/gpm/internal/gitprofile"
-	"github.com/tonmoydeb/gpm/internal/managed"
-	"github.com/tonmoydeb/gpm/internal/resolve"
-	"github.com/tonmoydeb/gpm/internal/sshconfig"
-	"github.com/tonmoydeb/gpm/internal/sshkey"
-	"github.com/tonmoydeb/gpm/internal/sshprofile"
+	"github.com/tonmoydeb404/gpm/internal/auth"
+	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/dirs"
+	"github.com/tonmoydeb404/gpm/internal/gitcmd"
+	"github.com/tonmoydeb404/gpm/internal/gitconfig"
+	"github.com/tonmoydeb404/gpm/internal/gitprofile"
+	"github.com/tonmoydeb404/gpm/internal/managed"
+	"github.com/tonmoydeb404/gpm/internal/resolve"
+	"github.com/tonmoydeb404/gpm/internal/sshconfig"
+	"github.com/tonmoydeb404/gpm/internal/sshkey"
+	"github.com/tonmoydeb404/gpm/internal/sshprofile"
 )
 
 // Status is the outcome of a check.

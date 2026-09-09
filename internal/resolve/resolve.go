@@ -4,10 +4,10 @@
 package resolve
 
 import (
-	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/dirs"
-	"github.com/tonmoydeb/gpm/internal/gitcmd"
-	"github.com/tonmoydeb/gpm/internal/gitconfig"
+	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/dirs"
+	"github.com/tonmoydeb404/gpm/internal/gitcmd"
+	"github.com/tonmoydeb404/gpm/internal/gitconfig"
 )
 
 // Profile returns the git profile username governing dir (""

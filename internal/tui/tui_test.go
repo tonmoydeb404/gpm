@@ -13,10 +13,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/x/exp/teatest"
 
-	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/gitprofile"
-	"github.com/tonmoydeb/gpm/internal/sshprofile"
-	"github.com/tonmoydeb/gpm/internal/sync"
+	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/gitprofile"
+	"github.com/tonmoydeb404/gpm/internal/sshprofile"
+	"github.com/tonmoydeb404/gpm/internal/sync"
 )
 
 // sandbox isolates every TUI test the same way the CLI tests do:

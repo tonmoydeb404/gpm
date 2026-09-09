@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/dirs"
-	"github.com/tonmoydeb/gpm/internal/gitcmd"
-	"github.com/tonmoydeb/gpm/internal/gitprofile"
-	"github.com/tonmoydeb/gpm/internal/sshprofile"
+	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/dirs"
+	"github.com/tonmoydeb404/gpm/internal/gitcmd"
+	"github.com/tonmoydeb404/gpm/internal/gitprofile"
+	"github.com/tonmoydeb404/gpm/internal/sshprofile"
 )
 
 // Report is everything a scan found on the machine (config-only).

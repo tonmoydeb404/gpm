@@ -15,7 +15,7 @@ import (
 
 	"golang.org/x/crypto/ssh"
 
-	"github.com/tonmoydeb/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/config"
 )
 
 // Generate creates a new ED25519 key pair at privatePath. The private

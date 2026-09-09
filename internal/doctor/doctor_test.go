@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/gitconfig"
-	"github.com/tonmoydeb/gpm/internal/sshconfig"
-	"github.com/tonmoydeb/gpm/internal/sshkey"
+	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/gitconfig"
+	"github.com/tonmoydeb404/gpm/internal/sshconfig"
+	"github.com/tonmoydeb404/gpm/internal/sshkey"
 )
 
 func testHome(t *testing.T) string {

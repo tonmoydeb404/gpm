@@ -10,8 +10,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/dirs"
+	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/dirs"
 )
 
 // Validate checks a git profile's fields.

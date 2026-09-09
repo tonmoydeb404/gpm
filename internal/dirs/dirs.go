@@ -13,7 +13,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/tonmoydeb/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/config"
 )
 
 // Mapping is a flattened directory → username view used for display,

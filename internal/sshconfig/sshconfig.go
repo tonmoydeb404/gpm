@@ -8,9 +8,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/managed"
-	"github.com/tonmoydeb/gpm/internal/sshprofile"
+	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/managed"
+	"github.com/tonmoydeb404/gpm/internal/sshprofile"
 )
 
 // Markers of the managed block, re-exported for callers and tests.

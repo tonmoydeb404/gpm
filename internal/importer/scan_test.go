@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/sshkey"
+	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/sshkey"
 )
 
 // writeKey generates a key pair under ~/.ssh and returns its path.

@@ -2,7 +2,7 @@
 package main
 
 import (
-	"github.com/tonmoydeb/gpm/internal/cli"
+	"github.com/tonmoydeb404/gpm/internal/cli"
 )
 
 func main() {

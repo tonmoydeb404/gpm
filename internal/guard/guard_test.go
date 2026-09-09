@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tonmoydeb/gpm/internal/gitcmd"
+	"github.com/tonmoydeb404/gpm/internal/gitcmd"
 )
 
 func tempRepo(t *testing.T) string {

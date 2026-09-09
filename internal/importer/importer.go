@@ -9,9 +9,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/managed"
-	"github.com/tonmoydeb/gpm/internal/sshkey"
+	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/managed"
+	"github.com/tonmoydeb404/gpm/internal/sshkey"
 )
 
 // Candidate is a proposed profile pair derived from the existing
@@ -69,9 +69,9 @@ func detectSSH() ([]Candidate, []string, error) {
 	stanzas := loadSSHStanzas(path, &warnings)
 
 	var (
-		cands       []Candidate
-		seenName    = map[string]int{}
-		seenGlobal  bool
+		cands      []Candidate
+		seenName   = map[string]int{}
+		seenGlobal bool
 	)
 	for _, s := range stanzas {
 		key := s.firstIdentityFile()

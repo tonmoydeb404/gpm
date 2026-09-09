@@ -7,12 +7,12 @@ import (
 
 	"github.com/atotto/clipboard"
 
-	"github.com/tonmoydeb/gpm/internal/auth"
-	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/doctor"
-	"github.com/tonmoydeb/gpm/internal/importer"
-	"github.com/tonmoydeb/gpm/internal/sshkey"
-	"github.com/tonmoydeb/gpm/internal/sync"
+	"github.com/tonmoydeb404/gpm/internal/auth"
+	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/doctor"
+	"github.com/tonmoydeb404/gpm/internal/importer"
+	"github.com/tonmoydeb404/gpm/internal/sshkey"
+	"github.com/tonmoydeb404/gpm/internal/sync"
 )
 
 // savedMsg reports the outcome of persisting the config and

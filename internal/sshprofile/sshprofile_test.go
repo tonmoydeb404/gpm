@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/sshkey"
+	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/sshkey"
 )
 
 func testHome(t *testing.T) string {

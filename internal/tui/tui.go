@@ -20,9 +20,9 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/doctor"
-	"github.com/tonmoydeb/gpm/internal/importer"
+	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/doctor"
+	"github.com/tonmoydeb404/gpm/internal/importer"
 )
 
 // saveIntent tells the savedMsg handler where to go once a mutation

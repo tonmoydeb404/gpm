@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/tonmoydeb/gpm/internal/gitcmd"
+	"github.com/tonmoydeb404/gpm/internal/gitcmd"
 )
 
 // hookMarker identifies hooks written by gpm.

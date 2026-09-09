@@ -6,11 +6,11 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/dirs"
-	"github.com/tonmoydeb/gpm/internal/gitprofile"
-	"github.com/tonmoydeb/gpm/internal/sshkey"
-	"github.com/tonmoydeb/gpm/internal/sshprofile"
+	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/dirs"
+	"github.com/tonmoydeb404/gpm/internal/gitprofile"
+	"github.com/tonmoydeb404/gpm/internal/sshkey"
+	"github.com/tonmoydeb404/gpm/internal/sshprofile"
 )
 
 // --- screen constructors -----------------------------------------------

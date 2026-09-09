@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/tonmoydeb/gpm/internal/doctor"
+	"github.com/tonmoydeb404/gpm/internal/doctor"
 )
 
 // renderDoctorResults formats doctor check outcomes: a pass/warn/fail

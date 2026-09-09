@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tonmoydeb/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/config"
 )
 
 func testHome(t *testing.T) string {
