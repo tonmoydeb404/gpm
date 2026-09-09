@@ -2,7 +2,9 @@ package doctor
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/tonmoydeb404/gpm/internal/config"
@@ -92,7 +94,16 @@ func TestMissingKeyFails(t *testing.T) {
 func TestPermissionsFixed(t *testing.T) {
 	cfg, home := setupHealthy(t)
 	key := filepath.Join(home, ".ssh", "id_ed25519_work")
-	os.Chmod(key, 0o644)
+	if runtime.GOOS == "windows" {
+		// Restore inherited ACLs (the Windows counterpart of a loose
+		// chmod): perm.Private then reports the key as unprotected.
+		out, err := exec.Command("icacls", key, "/reset").CombinedOutput()
+		if err != nil {
+			t.Fatalf("icacls /reset: %v: %s", err, out)
+		}
+	} else {
+		os.Chmod(key, 0o644)
+	}
 
 	r := statusOf(Run(cfg, Options{}), "Permissions")
 	if r == nil || r.Status != Warn {

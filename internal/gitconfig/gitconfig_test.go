@@ -87,7 +87,7 @@ func TestSyncFromConfig(t *testing.T) {
 	if strings.Count(content, "includeIf") != 2 {
 		t.Errorf("expected 2 includeIf rules:\n%s", content)
 	}
-	if !strings.Contains(content, filepath.Join(mustGitconfigDir(t), "work")) {
+	if !strings.Contains(content, filepath.ToSlash(filepath.Join(mustGitconfigDir(t), "work"))) {
 		t.Errorf("include path does not point at the profile file:\n%s", content)
 	}
 }

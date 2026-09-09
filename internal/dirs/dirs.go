@@ -56,7 +56,9 @@ func Shorten(p string) string {
 			return "~"
 		}
 		if strings.HasPrefix(p, prefix+string(filepath.Separator)) {
-			return "~" + strings.TrimPrefix(p, prefix)
+			// Forward slashes keep the ~ display consistent across
+			// platforms and match git's own path rendering.
+			return filepath.ToSlash("~" + strings.TrimPrefix(p, prefix))
 		}
 	}
 	return p

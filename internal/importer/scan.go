@@ -464,7 +464,10 @@ func parseGitConfigLines(content string) []gitVar {
 }
 
 // stripGitValue trims whitespace, inline comments, and one level of
-// surrounding quotes from a config value.
+// surrounding quotes from a config value. Escape sequences are only
+// processed inside double quotes — git treats backslashes outside
+// quotes as literal characters, which matters for Windows paths
+// (C:\Users\...) written unquoted.
 func stripGitValue(v string) string {
 	v = strings.TrimSpace(v)
 	var (
@@ -476,8 +479,17 @@ func stripGitValue(v string) string {
 	for i < end {
 		ch := v[i]
 		switch {
-		case ch == '\\' && i+1 < end:
-			b.WriteByte(v[i+1])
+		case ch == '\\' && inQ && i+1 < end:
+			switch v[i+1] {
+			case 'n':
+				b.WriteByte('\n')
+			case 't':
+				b.WriteByte('\t')
+			case 'b':
+				b.WriteByte('\b')
+			default:
+				b.WriteByte(v[i+1]) // \\ and \" and friends
+			}
 			i += 2
 			continue
 		case ch == '"':

@@ -146,8 +146,11 @@ func IncludeBlock(cfg *config.Config) (string, error) {
 	b.WriteString(BeginMarker)
 	b.WriteString("\n")
 	for _, r := range rules {
-		b.WriteString(fmt.Sprintf("[includeIf \"gitdir:%s/\"]\n", r.dir))
-		b.WriteString(fmt.Sprintf("\tpath = %s\n", r.include))
+		// git matches gitdir patterns against forward-slash paths, so
+		// render the condition and the include path slashed. The path
+		// is quoted so spaces survive.
+		b.WriteString(fmt.Sprintf("[includeIf \"gitdir:%s/\"]\n", filepath.ToSlash(r.dir)))
+		b.WriteString(fmt.Sprintf("\tpath = \"%s\"\n", filepath.ToSlash(r.include)))
 		b.WriteString("\n")
 	}
 	b.WriteString(EndMarker)

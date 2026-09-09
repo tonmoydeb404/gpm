@@ -244,7 +244,10 @@ func TestStripGitValue(t *testing.T) {
 		`"my key"`:               "my key",
 		`value # comment`:        "value",
 		`"quoted # not comment"`: "quoted # not comment",
-		`esc\"aped`:              `esc"aped`,
+		`"esc\"aped"`:            `esc"aped`,        // escapes only inside quotes
+		`C:\Users\jane\x`:        `C:\Users\jane\x`, // backslashes are literal unquoted
+		`C:\Users\jane\x # cmt`:  `C:\Users\jane\x`,
+		`esc\"aped`:              `esc\aped`, // " opens a quoted span; \ is literal
 		``:                       "",
 	}
 	for in, want := range cases {
