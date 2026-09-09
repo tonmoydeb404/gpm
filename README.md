@@ -14,6 +14,24 @@ dependencies beyond `git` and `ssh` themselves.
 
 ## Install
 
+Grab a prebuilt binary from
+[Releases](https://github.com/tonmoydeb404/gpm/releases) — no Go
+required:
+
+```sh
+# macOS (Apple Silicon)
+curl -fsSL -o gpm.tar.gz \
+  https://github.com/tonmoydeb404/gpm/releases/latest/download/gpm_darwin_arm64.tar.gz
+
+# Linux (amd64)
+curl -fsSL -o gpm.tar.gz \
+  https://github.com/tonmoydeb404/gpm/releases/latest/download/gpm_linux_amd64.tar.gz
+
+tar xzf gpm.tar.gz && sudo mv gpm /usr/local/bin/
+```
+
+Or with Go installed:
+
 ```sh
 go install github.com/tonmoydeb404/gpm/cmd/gpm@latest
 ```
