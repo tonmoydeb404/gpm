@@ -7,11 +7,13 @@ import (
 	"testing"
 
 	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/perm"
 )
 
 func testHome(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
+	t.Setenv("USERPROFILE", dir)
 	t.Setenv("HOME", dir)
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(dir, ".config"))
 	t.Setenv("GPM_HOME", "")
@@ -48,9 +50,8 @@ func TestUpdateCreatesFile(t *testing.T) {
 	if !strings.HasPrefix(content, BeginMarker) {
 		t.Errorf("new file should start with the managed block:\n%s", content)
 	}
-	info, _ := os.Stat(path)
-	if perm := info.Mode().Perm(); perm != 0o600 {
-		t.Errorf("ssh config perms = %o, want 600", perm)
+	if ok, cur := perm.Private(path); !ok {
+		t.Errorf("ssh config perms = %s, want private", cur)
 	}
 }
 

@@ -7,11 +7,13 @@ import (
 	"testing"
 
 	"github.com/tonmoydeb404/gpm/internal/config"
+	"github.com/tonmoydeb404/gpm/internal/perm"
 )
 
 func testHome(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
+	t.Setenv("USERPROFILE", dir)
 	t.Setenv("HOME", dir)
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(dir, ".config"))
 	t.Setenv("GPM_HOME", "")
@@ -159,12 +161,8 @@ func TestGlobalGitconfigPermsPreserved(t *testing.T) {
 	if err := SyncFromConfig(cfg); err != nil {
 		t.Fatal(err)
 	}
-	info, err := os.Stat(global)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if perm := info.Mode().Perm(); perm != 0o644 {
-		t.Errorf("global gitconfig perms = %o, want 644 (preserved)", perm)
+	if ok, cur := perm.Standard(global); !ok {
+		t.Errorf("global gitconfig perms = %s, want standard (preserved)", cur)
 	}
 }
 

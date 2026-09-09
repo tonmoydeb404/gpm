@@ -16,6 +16,7 @@ import (
 	"github.com/tonmoydeb404/gpm/internal/gitconfig"
 	"github.com/tonmoydeb404/gpm/internal/gitprofile"
 	"github.com/tonmoydeb404/gpm/internal/managed"
+	"github.com/tonmoydeb404/gpm/internal/perm"
 	"github.com/tonmoydeb404/gpm/internal/resolve"
 	"github.com/tonmoydeb404/gpm/internal/sshconfig"
 	"github.com/tonmoydeb404/gpm/internal/sshkey"
@@ -162,15 +163,15 @@ func checkPermissions(cfg *config.Config, opts Options) []Result {
 	fixed := false
 
 	if sshDir, err := config.SSHDir(); err == nil {
-		if info, err := os.Stat(sshDir); err == nil && info.Mode().Perm() != 0o700 {
+		if ok, cur := perm.DirPrivate(sshDir); !ok {
 			if opts.Fix {
-				if err := os.Chmod(sshDir, 0o700); err == nil {
-					res.Detail += "~/.ssh -> 0700 (fixed); "
+				if err := perm.SetDirPrivate(sshDir); err == nil {
+					res.Detail += "~/.ssh -> private (fixed); "
 					fixed = true
 				}
 			} else {
 				res.Status = Warn
-				res.Detail += fmt.Sprintf("~/.ssh is %o, want 700; ", info.Mode().Perm())
+				res.Detail += fmt.Sprintf("~/.ssh is %s, want private; ", cur)
 				res.Hint = "run: gpm doctor --fix"
 			}
 		}
@@ -181,28 +182,28 @@ func checkPermissions(cfg *config.Config, opts Options) []Result {
 		if p.KeyPath == "" || !sshkey.Exists(p.KeyPath) {
 			continue
 		}
-		if info, err := os.Stat(p.KeyPath); err == nil && info.Mode().Perm() != 0o600 {
+		if ok, cur := perm.Private(p.KeyPath); !ok {
 			if opts.Fix {
-				if err := os.Chmod(p.KeyPath, 0o600); err == nil {
-					res.Detail += fmt.Sprintf("%s -> 0600 (fixed); ", name)
+				if err := perm.SetPrivate(p.KeyPath); err == nil {
+					res.Detail += fmt.Sprintf("%s -> private (fixed); ", name)
 					fixed = true
 				}
 			} else {
 				res.Status = Warn
-				res.Detail += fmt.Sprintf("%s private key is %o, want 600; ", name, info.Mode().Perm())
+				res.Detail += fmt.Sprintf("%s private key is %s, want private; ", name, cur)
 				res.Hint = "run: gpm doctor --fix"
 			}
 		}
 		pub := sshkey.PubPath(p.KeyPath)
-		if info, err := os.Stat(pub); err == nil && info.Mode().Perm() != 0o644 {
+		if ok, cur := perm.Standard(pub); !ok {
 			if opts.Fix {
-				if err := os.Chmod(pub, 0o644); err == nil {
-					res.Detail += fmt.Sprintf("%s.pub -> 0644 (fixed); ", name)
+				if err := perm.SetStandard(pub); err == nil {
+					res.Detail += fmt.Sprintf("%s.pub -> standard (fixed); ", name)
 					fixed = true
 				}
 			} else {
 				res.Status = Warn
-				res.Detail += fmt.Sprintf("%s public key is %o, want 644; ", name, info.Mode().Perm())
+				res.Detail += fmt.Sprintf("%s public key is %s, want standard; ", name, cur)
 				res.Hint = "run: gpm doctor --fix"
 			}
 		}

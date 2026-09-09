@@ -3,6 +3,7 @@ package guard
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -35,9 +36,11 @@ func TestInstallAndRemove(t *testing.T) {
 	if !strings.Contains(string(data), hookMarker) {
 		t.Errorf("hook missing marker: %q", data)
 	}
-	info, _ := os.Stat(path)
-	if info.Mode().Perm()&0o100 == 0 {
-		t.Error("hook must be executable")
+	if runtime.GOOS != "windows" {
+		info, _ := os.Stat(path)
+		if info.Mode().Perm()&0o100 == 0 {
+			t.Error("hook must be executable")
+		}
 	}
 	ok, err := IsInstalled(repo)
 	if err != nil || !ok {

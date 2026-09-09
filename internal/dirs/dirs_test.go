@@ -11,6 +11,7 @@ import (
 func testHome(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
+	t.Setenv("USERPROFILE", dir)
 	t.Setenv("HOME", dir)
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(dir, ".config"))
 	t.Setenv("GPM_HOME", "")

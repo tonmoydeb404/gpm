@@ -51,15 +51,9 @@ func Generate(privatePath, comment string) (string, error) {
 	if err := config.AtomicWrite(privatePath, privatePEM, 0o600); err != nil {
 		return "", err
 	}
-	if err := os.Chmod(privatePath, 0o600); err != nil {
-		return "", fmt.Errorf("chmod %s: %w", privatePath, err)
-	}
 	pubPath := PubPath(privatePath)
 	if err := config.AtomicWrite(pubPath, []byte(authorizedKey), 0o644); err != nil {
 		return "", err
-	}
-	if err := os.Chmod(pubPath, 0o644); err != nil {
-		return "", fmt.Errorf("chmod %s: %w", pubPath, err)
 	}
 	return string(authorizedKey), nil
 }

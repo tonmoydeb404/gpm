@@ -13,6 +13,8 @@ import (
 	"time"
 
 	toml "github.com/pelletier/go-toml/v2"
+
+	"github.com/tonmoydeb404/gpm/internal/perm"
 )
 
 // nameRe restricts profile names to characters that are safe in file
@@ -250,7 +252,7 @@ func ExpandPath(p string) (string, error) {
 // AtomicWrite writes data to path via a temp file and rename so that a
 // crash never leaves a truncated file behind. Parent directories are
 // created with 0700.
-func AtomicWrite(path string, data []byte, perm os.FileMode) error {
+func AtomicWrite(path string, data []byte, mode os.FileMode) error {
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return fmt.Errorf("create %s: %w", dir, err)
@@ -267,7 +269,7 @@ func AtomicWrite(path string, data []byte, perm os.FileMode) error {
 		tmp.Close()
 		return fmt.Errorf("write %s: %w", tmpName, err)
 	}
-	if err := tmp.Chmod(perm); err != nil {
+	if err := tmp.Chmod(mode); err != nil {
 		tmp.Close()
 		return fmt.Errorf("chmod %s: %w", tmpName, err)
 	}
@@ -276,6 +278,9 @@ func AtomicWrite(path string, data []byte, perm os.FileMode) error {
 	}
 	if err := os.Rename(tmpName, path); err != nil {
 		return fmt.Errorf("rename %s to %s: %w", tmpName, path, err)
+	}
+	if err := perm.ApplyMode(path, mode); err != nil {
+		return fmt.Errorf("apply permissions to %s: %w", path, err)
 	}
 	return nil
 }

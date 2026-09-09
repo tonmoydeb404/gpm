@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/tonmoydeb404/gpm/internal/gitcmd"
+	"github.com/tonmoydeb404/gpm/internal/perm"
 )
 
 // hookMarker identifies hooks written by gpm.
@@ -52,7 +53,7 @@ func Install(dir string, force bool) (string, error) {
 	if err := os.WriteFile(path, []byte(hookScript), 0o755); err != nil {
 		return "", fmt.Errorf("write %s: %w", path, err)
 	}
-	if err := os.Chmod(path, 0o755); err != nil {
+	if err := perm.SetExecutable(path); err != nil {
 		return "", fmt.Errorf("chmod %s: %w", path, err)
 	}
 	return path, nil

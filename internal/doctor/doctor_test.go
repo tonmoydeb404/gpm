@@ -9,11 +9,14 @@ import (
 	"github.com/tonmoydeb404/gpm/internal/gitconfig"
 	"github.com/tonmoydeb404/gpm/internal/sshconfig"
 	"github.com/tonmoydeb404/gpm/internal/sshkey"
+
+	"github.com/tonmoydeb404/gpm/internal/perm"
 )
 
 func testHome(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
+	t.Setenv("USERPROFILE", dir)
 	t.Setenv("HOME", dir)
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(dir, ".config"))
 	t.Setenv("GPM_HOME", "")
@@ -100,9 +103,8 @@ func TestPermissionsFixed(t *testing.T) {
 	if r == nil || r.Status != Pass {
 		t.Errorf("Permissions check after fix = %+v, want pass", r)
 	}
-	info, _ := os.Stat(key)
-	if info.Mode().Perm() != 0o600 {
-		t.Errorf("key perms = %o, want 600 after fix", info.Mode().Perm())
+	if ok, cur := perm.Private(key); !ok {
+		t.Errorf("key perms = %s, want private after fix", cur)
 	}
 }
 

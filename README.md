@@ -9,8 +9,8 @@ committing with the wrong identity.
 SSH profiles (keys + providers) and Git profiles (commit identities)
 are independent entities — combine them freely.
 
-Cross-platform (macOS/Linux), a single static binary, no external
-dependencies beyond `git` and `ssh` themselves.
+Cross-platform (macOS/Linux/Windows), a single static binary, no
+external dependencies beyond `git` and `ssh` themselves.
 
 ## Install
 
@@ -23,6 +23,15 @@ curl -fsSL https://raw.githubusercontent.com/tonmoydeb404/gpm/main/install.sh | 
 The script detects your OS/architecture, downloads the latest release
 binary, and installs it to `/usr/local/bin` (set `GPM_INSTALL_DIR` to
 choose another location).
+
+Windows (PowerShell):
+
+```powershell
+irm https://raw.githubusercontent.com/tonmoydeb404/gpm/main/install.ps1 | iex
+```
+
+Installs to `%LOCALAPPDATA%\Programs\gpm` and adds it to your user
+PATH (`-InstallDir` to choose another location).
 
 Prefer manual steps? Grab a tarball from
 [Releases](https://github.com/tonmoydeb404/gpm/releases):
@@ -225,6 +234,8 @@ are missing.
 
 - ED25519 keys only, OpenSSH format, generated locally
 - Private keys: `0600`, public keys: `0644`, `~/.ssh`: `0700`
+  (macOS/Linux); on Windows private keys get a restrictive NTFS ACL
+  (current user + SYSTEM only, inheritance removed) via `icacls`
 - Private keys never leave the machine; nothing is uploaded
 - No passwords or tokens stored; GitHub verification uses plain SSH
 
@@ -233,7 +244,7 @@ are missing.
 - GitLab / Bitbucket / self-hosted providers
 - `gpm clone` (clone with the right profile automatically)
 - GitHub API integration and automatic key registration
-- Configuration sync, Windows support
+- Configuration sync
 
 ## Development
 

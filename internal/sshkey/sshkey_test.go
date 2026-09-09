@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"golang.org/x/crypto/ssh"
+
+	"github.com/tonmoydeb404/gpm/internal/perm"
 )
 
 func TestGenerateRoundtrip(t *testing.T) {
@@ -62,11 +64,13 @@ func TestGeneratePermissions(t *testing.T) {
 	if _, err := Generate(keyPath, ""); err != nil {
 		t.Fatal(err)
 	}
-	if info, err := os.Stat(keyPath); err != nil || info.Mode().Perm() != 0o600 {
-		t.Errorf("private key perms = %v, want 600", info.Mode().Perm())
+	ok, cur := perm.Private(keyPath)
+	if !ok {
+		t.Errorf("private key perms = %s, want private", cur)
 	}
-	if info, err := os.Stat(keyPath + ".pub"); err != nil || info.Mode().Perm() != 0o644 {
-		t.Errorf("public key perms = %v, want 644", info.Mode().Perm())
+	ok, cur = perm.Standard(keyPath + ".pub")
+	if !ok {
+		t.Errorf("public key perms = %s, want standard", cur)
 	}
 }
 

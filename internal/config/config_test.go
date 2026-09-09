@@ -6,12 +6,15 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/tonmoydeb404/gpm/internal/perm"
 )
 
 // testHome isolates the test from the real home directory.
 func testHome(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
+	t.Setenv("USERPROFILE", dir)
 	t.Setenv("HOME", dir)
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(dir, ".config"))
 	t.Setenv("GPM_HOME", "")
@@ -137,12 +140,8 @@ func TestSavePermissions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	info, err := os.Stat(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if perm := info.Mode().Perm(); perm != 0o600 {
-		t.Errorf("config perms = %o, want 600", perm)
+	if ok, cur := perm.Private(path); !ok {
+		t.Errorf("config perms = %s, want private", cur)
 	}
 }
 
