@@ -1,18 +1,15 @@
 // Package importer detects existing Git/SSH multi-account setups and
-// proposes gpm profiles for them. Detection reads ~/.ssh/config Host
-// stanzas and the global gitconfig (identity + includeIf rules) by
-// shelling out to git.
+// proposes gpm profiles for them. Detection reads ~/.ssh/config (with
+// Include directives, verified via `ssh -G`) and walks the global
+// gitconfig's include/includeIf chain (config-only, no repo walk).
 package importer
 
 import (
 	"fmt"
-	"os"
 	"regexp"
-	"sort"
 	"strings"
 
 	"github.com/tonmoydeb/gpm/internal/config"
-	"github.com/tonmoydeb/gpm/internal/gitcmd"
 	"github.com/tonmoydeb/gpm/internal/managed"
 	"github.com/tonmoydeb/gpm/internal/sshkey"
 )
@@ -20,14 +17,17 @@ import (
 // Candidate is a proposed profile pair derived from the existing
 // setup. Importing a candidate creates an SSH profile from the key,
 // host alias, and provider hosts and — when the email is known — a
-// Git profile with the same username.
+// Git profile with the same username. HostAlias=="" denotes the global
+// SSH identity (no Host stanza alias).
 type Candidate struct {
-	Username    string   // proposed username (ssh + git)
+	Username    string   // proposed username (ssh + git) — config-based (git user.name)
 	Email       string   // git user.email (may be empty)
 	KeyPath     string   // expanded absolute path to the private key
-	HostAlias   string   // ssh config alias of the source stanza
+	HostAlias   string   // ssh config alias of the source stanza ("" = global)
 	Hosts       []string // provider hostnames from the Host stanzas
-	Directories []string // includeIf directories whose email matches
+	Directories []string // directories mapped via includeIf
+	Fingerprint string   // SHA256 fingerprint of the key ("" when unknown)
+	RepoCount   int      // reserved (always 0 in config-only mode)
 }
 
 // Detection is everything import found on the machine.
@@ -38,64 +38,40 @@ type Detection struct {
 
 var invalidNameChars = regexp.MustCompile(`[^A-Za-z0-9_.-]+`)
 
-// Detect scans ~/.ssh/config and the global gitconfig. When existing
-// is non-nil, candidates matching already-imported profiles inherit
-// their emails so includeIf mappings can be adopted on a second run.
+// Detect scans ~/.ssh/config and the global gitconfig (config-only).
+// See Scan for the full report.
 func Detect(existing *config.Config) (*Detection, error) {
-	d := &Detection{}
-	cands, warnings, err := detectSSH()
-	if err != nil {
-		return nil, err
+	r := Scan(existing, ScanOptions{})
+	return &Detection{Candidates: r.Candidates, Warnings: r.Warnings}, nil
+}
+
+// isGlobalAlias reports whether the SSH alias should be treated as the
+// global identity. Bare provider hostnames (e.g. "github.com") with no
+// alias suffix are the user's global SSH identity.
+func isGlobalAlias(alias, hostName string) bool {
+	if alias == "" || hostName == "" {
+		return false
 	}
-	d.Candidates = cands
-	d.Warnings = append(d.Warnings, warnings...)
-
-	if existing != nil {
-		for i := range d.Candidates {
-			if p, ok := existing.GitProfiles[d.Candidates[i].Username]; ok {
-				if d.Candidates[i].Email == "" {
-					d.Candidates[i].Email = p.Email
-				}
-			}
-		}
-	}
-
-	// Attach the global git email when it is unambiguous.
-	if len(d.Candidates) == 1 {
-		home, err := config.Home()
-		if err == nil {
-			if email, _ := gitcmd.ConfigValue(home, "user.email"); email != "" {
-				d.Candidates[0].Email = email
-			}
-		}
-	}
-
-	d.Warnings = detectIncludes(d.Candidates, d.Warnings)
-
-	sort.Slice(d.Candidates, func(i, j int) bool { return d.Candidates[i].Username < d.Candidates[j].Username })
-	return d, nil
+	return strings.EqualFold(alias, hostName)
 }
 
 // detectSSH extracts Host stanzas with identity files from
-// ~/.ssh/config as SSH (and, by name, Git) profile candidates.
+// ~/.ssh/config (following Include directives) as SSH (and, by name,
+// Git) profile candidates. Effective key paths and hostnames are
+// resolved with `ssh -G` when available. Bare provider hosts become
+// global candidates (HostAlias="").
 func detectSSH() ([]Candidate, []string, error) {
 	path, err := config.SSHConfigPath()
 	if err != nil {
 		return nil, nil, err
 	}
-	data, err := os.ReadFile(path)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil, nil
-		}
-		return nil, nil, fmt.Errorf("read %s: %w", path, err)
-	}
-	stanzas := parseSSHConfig(stripManaged(string(data)))
+	var warnings []string
+	stanzas := loadSSHStanzas(path, &warnings)
 
 	var (
-		cands    []Candidate
-		warnings []string
-		seenName = map[string]int{}
+		cands       []Candidate
+		seenName    = map[string]int{}
+		seenGlobal  bool
 	)
 	for _, s := range stanzas {
 		key := s.firstIdentityFile()
@@ -111,15 +87,49 @@ func detectSSH() ([]Candidate, []string, error) {
 			hostName = strings.ToLower(alias)
 		}
 
-		name := sanitizeName(alias)
-		if name == "" {
-			warnings = append(warnings, fmt.Sprintf("host %s: unusable alias, skipped", alias))
-			continue
+		// Refine with what ssh itself would resolve for this alias
+		// (Match blocks, token expansion, Include'd files). `ssh -G`
+		// may not see the stanza at all — e.g. in sandbox mode its
+		// Include lines point outside it — so it only refines the
+		// parsed values when it clearly resolved them: an identity
+		// file that exists, or a hostname that differs from the
+		// bare alias (the unresolved default).
+		if effKey, effHost, ok := resolveEffectiveSSH(path, alias); ok {
+			if effKey != "" && sshkey.Exists(mustExpand(effKey)) {
+				key = effKey
+			}
+			if effHost != "" && effHost != strings.ToLower(alias) {
+				hostName = effHost
+			}
 		}
-		if seenName[name] > 0 {
-			name = fmt.Sprintf("%s-%d", name, seenName[name]+1)
+
+		isGlobal := isGlobalAlias(alias, hostName)
+		if isGlobal {
+			if seenGlobal {
+				warnings = append(warnings, fmt.Sprintf("host %s: second global alias, treating as scoped %q", alias, alias))
+				isGlobal = false
+			} else {
+				seenGlobal = true
+			}
 		}
-		seenName[name]++
+
+		// Config-based username: will be replaced from gitconfig's
+		// user.name in Scan/applyGitNames; for now use sanitized alias
+		// as placeholder (empty for global — filled later).
+		var name string
+		if isGlobal {
+			name = "" // placeholder, resolved from git config
+		} else {
+			name = sanitizeName(alias)
+			if name == "" {
+				warnings = append(warnings, fmt.Sprintf("host %s: unusable alias, skipped", alias))
+				continue
+			}
+			if seenName[name] > 0 {
+				name = fmt.Sprintf("%s-%d", name, seenName[name]+1)
+			}
+			seenName[name]++
+		}
 
 		keyPath, err := config.ExpandPath(key)
 		if err != nil {
@@ -130,94 +140,30 @@ func detectSSH() ([]Candidate, []string, error) {
 			warnings = append(warnings, fmt.Sprintf("host %s: key %s does not exist, skipped", alias, key))
 			continue
 		}
-		cands = append(cands, Candidate{
+		c := Candidate{
 			Username:  name,
 			KeyPath:   keyPath,
 			HostAlias: alias,
 			Hosts:     []string{hostName},
-		})
+		}
+		if isGlobal {
+			c.HostAlias = "" // global marker
+		}
+		if fp, err := sshkey.Fingerprint(sshkey.PubPath(keyPath)); err == nil {
+			c.Fingerprint = fp
+		}
+		cands = append(cands, c)
 	}
 	return cands, warnings, nil
 }
 
-// detectIncludes converts existing includeIf gitdir rules into
-// directories on the candidate whose email matches the included file.
-func detectIncludes(cands []Candidate, warnings []string) []string {
-	home, err := config.Home()
+// mustExpand expands a key path, returning it unchanged on error.
+func mustExpand(p string) string {
+	abs, err := config.ExpandPath(p)
 	if err != nil {
-		return warnings
+		return p
 	}
-	rules, err := gitcmd.GlobalConfigRegexp(home, `^includeif\..*\.path$`)
-	if err != nil || len(rules) == 0 {
-		return warnings
-	}
-	for _, kv := range rules {
-		key, value := kv[0], kv[1]
-		gitdir, ok := extractGitdir(key)
-		if !ok {
-			continue
-		}
-		email := readEmailFromFile(value)
-		if email == "" {
-			warnings = append(warnings, fmt.Sprintf("includeIf %s: could not read an email from %s, skipped", gitdir, value))
-			continue
-		}
-		matched := -1
-		for i, c := range cands {
-			if c.Email != "" && strings.EqualFold(c.Email, email) {
-				matched = i
-				break
-			}
-		}
-		if matched == -1 {
-			warnings = append(warnings, fmt.Sprintf("includeIf %s: email %s does not match any imported host, skipped", gitdir, email))
-			continue
-		}
-		dir, err := config.ExpandPath(gitdir)
-		if err != nil {
-			continue
-		}
-		cands[matched].Directories = append(cands[matched].Directories, dir)
-	}
-	return warnings
-}
-
-// extractGitdir pulls the directory out of an includeIf config key
-// like `includeif.gitdir:~/works/corp/.path`.
-func extractGitdir(key string) (string, bool) {
-	key = strings.ToLower(key)
-	const prefix = "includeif.gitdir:"
-	const suffix = ".path"
-	if !strings.HasPrefix(key, prefix) || !strings.HasSuffix(key, suffix) {
-		return "", false
-	}
-	dir := key[len(prefix) : len(key)-len(suffix)]
-	dir = strings.TrimSuffix(dir, "/")
-	if dir == "" {
-		return "", false
-	}
-	return dir, true
-}
-
-// emailRe matches the email line of a gitconfig file.
-var emailRe = regexp.MustCompile(`(?m)^\s*email\s*=\s*(.+?)\s*$`)
-
-// readEmailFromFile reads the first `email = ...` line of a gitconfig
-// file (used on includeIf targets, which may predate gpm).
-func readEmailFromFile(path string) string {
-	p, err := config.ExpandPath(path)
-	if err != nil {
-		return ""
-	}
-	data, err := os.ReadFile(p)
-	if err != nil {
-		return ""
-	}
-	m := emailRe.FindStringSubmatch(string(data))
-	if m == nil {
-		return ""
-	}
-	return strings.TrimSpace(m[1])
+	return abs
 }
 
 // sanitizeName turns an SSH alias into a valid profile name.

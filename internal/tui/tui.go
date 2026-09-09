@@ -22,6 +22,7 @@ import (
 
 	"github.com/tonmoydeb/gpm/internal/config"
 	"github.com/tonmoydeb/gpm/internal/doctor"
+	"github.com/tonmoydeb/gpm/internal/importer"
 )
 
 // saveIntent tells the savedMsg handler where to go once a mutation
@@ -61,6 +62,7 @@ type Model struct {
 
 	intent  saveIntent
 	outcome *createOutcome
+	report  *importer.Report // result of the last scan
 
 	width, height int
 }
@@ -200,6 +202,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s := doctorScreen(msg.results)
 		m.push(s)
 		m.setStatus(true, "doctor finished")
+		return m, nil
+
+	case scanRanMsg:
+		m.busy = ""
+		if msg.err != nil {
+			m.setStatus(false, "scan failed: "+msg.err.Error())
+			return m, nil
+		}
+		m.report = msg.report
+		m.push(m.scanScreen(msg.report))
+		m.setStatus(true, "scan finished")
 		return m, nil
 
 	case tea.KeyMsg:

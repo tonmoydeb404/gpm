@@ -90,21 +90,38 @@ func TestSanitizeName(t *testing.T) {
 	}
 }
 
-func TestExtractGitdir(t *testing.T) {
-	if d, ok := extractGitdir("includeif.gitdir:~/works/corp/.path"); !ok || d != "~/works/corp" {
-		t.Errorf("extractGitdir = %q, %v", d, ok)
+func TestGitdirDir(t *testing.T) {
+	home := testHome(t)
+	if d, ok := gitdirDir(`gitdir:~/works/corp/`); !ok || d != filepath.Join(home, "works", "corp") {
+		t.Errorf("gitdirDir = %q, %v", d, ok)
 	}
-	if _, ok := extractGitdir("include.onpurpose.x.path"); ok {
-		t.Error("non-gitdir include must not match")
+	if d, ok := gitdirDir(`gitdir/i:~/works/corp/**`); !ok || d != filepath.Join(home, "works", "corp") {
+		t.Errorf("gitdirDir = %q, %v", d, ok)
+	}
+	if _, ok := gitdirDir("onpurpose"); ok {
+		t.Error("non-gitdir condition must not match")
+	}
+	if _, ok := gitdirDir("gitdir:./relative"); ok {
+		t.Error("relative gitdir condition must not match")
 	}
 }
 
-func TestReadEmailFromFile(t *testing.T) {
+func TestFileEmail(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "cfg")
 	os.WriteFile(path, []byte("[user]\n\tname = J\n\temail = jane@corp.com\n"), 0o600)
-	if got := readEmailFromFile(path); got != "jane@corp.com" {
-		t.Errorf("readEmailFromFile = %q", got)
+	if got := fileEmail(path, map[string]bool{}, 0); got != "jane@corp.com" {
+		t.Errorf("fileEmail = %q", got)
+	}
+
+	// A file that includes another one picks up the included email,
+	// with later definitions winning.
+	included := filepath.Join(dir, "extra")
+	os.WriteFile(included, []byte("[user]\n\temail = extra@corp.com\n"), 0o600)
+	chain := filepath.Join(dir, "chain")
+	os.WriteFile(chain, []byte("[user]\n\temail = jane@corp.com\n[include]\n\tpath = extra\n"), 0o600)
+	if got := fileEmail(chain, map[string]bool{}, 0); got != "extra@corp.com" {
+		t.Errorf("fileEmail(chain) = %q, want the included email", got)
 	}
 }
 

@@ -178,6 +178,16 @@ func UnsetIdentity(dir string) error {
 	return nil
 }
 
+// RepoLocalConfig returns the repo-local (not global) value of key.
+// Missing values are returned as "".
+func RepoLocalConfig(dir, key string) (string, error) {
+	out, err := runWithStatus(dir, "config", "--local", "--get", key)
+	if errors.Is(err, ErrKeyUnset) {
+		return "", nil
+	}
+	return out, err
+}
+
 // GetRepoLocalIdentity reads repo-local (not global) user.name/email.
 // Missing values are returned as "".
 func GetRepoLocalIdentity(dir string) (name, email string, err error) {

@@ -10,6 +10,7 @@ import (
 	"github.com/tonmoydeb/gpm/internal/auth"
 	"github.com/tonmoydeb/gpm/internal/config"
 	"github.com/tonmoydeb/gpm/internal/doctor"
+	"github.com/tonmoydeb/gpm/internal/importer"
 	"github.com/tonmoydeb/gpm/internal/sshkey"
 	"github.com/tonmoydeb/gpm/internal/sync"
 )
@@ -30,6 +31,12 @@ type authTestedMsg struct {
 type doctorRanMsg struct {
 	results []doctor.Result
 	network bool
+}
+
+// scanRanMsg carries the outcome of a setup scan.
+type scanRanMsg struct {
+	report *importer.Report
+	err    error
 }
 
 // saveCmd persists the config and regenerates managed artifacts.
@@ -54,6 +61,13 @@ func testAuthCmd(name, keyPath, host string) tea.Cmd {
 func runDoctorCmd(cfg *config.Config, network bool) tea.Cmd {
 	return func() tea.Msg {
 		return doctorRanMsg{results: doctor.Run(cfg, doctor.Options{Network: network}), network: network}
+	}
+}
+
+// runScanCmd scans the machine's existing Git/SSH setup (config-only).
+func runScanCmd(cfg *config.Config) tea.Cmd {
+	return func() tea.Msg {
+		return scanRanMsg{report: importer.Scan(cfg, importer.ScanOptions{})}
 	}
 }
 
@@ -109,4 +123,10 @@ func (m *Model) testConnectionFor(name string) tea.Cmd {
 func (m *Model) runDoctor(network bool) tea.Cmd {
 	m.busy = "running doctor (this may take a moment)…"
 	return tea.Batch(runDoctorCmd(m.cfg, network), m.spinner.Tick)
+}
+
+// runScan triggers a setup scan as an async command.
+func (m *Model) runScan() tea.Cmd {
+	m.busy = "scanning your setup (this may take a moment)…"
+	return tea.Batch(runScanCmd(m.cfg), m.spinner.Tick)
 }

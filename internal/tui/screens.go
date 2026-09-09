@@ -25,6 +25,7 @@ func homeScreen() screen {
 			{label: "Git Profiles", desc: "commit identities", action: "home:git"},
 			{label: "Create", desc: "set up a new profile", action: "home:create"},
 			{label: "Run Doctor", desc: "diagnose the gpm setup", action: "home:doctor"},
+			{label: "Scan & Import", desc: "migrate an existing setup", action: "home:scan"},
 			{label: "Exit", action: "quit"},
 		},
 	}
@@ -245,6 +246,13 @@ func (m *Model) runAction(action string) tea.Cmd {
 		return m.push(createMenuScreen())
 	case action == "home:doctor":
 		return m.runDoctor(false)
+	case action == "home:scan":
+		return m.runScan()
+	case action == "scan:import":
+		return m.openScanImport()
+	case action == "scan:none":
+		m.setStatus(true, "nothing new to import")
+		return nil
 
 	case action == "ssh:create", action == "create:ssh":
 		return m.openSSHCreate()

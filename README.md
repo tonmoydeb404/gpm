@@ -108,9 +108,26 @@ Doctor exits non-zero when any check fails, so it can gate scripts.
 Already juggling accounts with hand-written ssh config?
 
 ```sh
-gpm import --dry-run    # see what was detected
-gpm import              # confirm and import: profiles + directory mappings
+gpm scan               # read-only report of what was detected
+gpm import --dry-run   # see what would be imported
+gpm import             # confirm and import: profiles + directory mappings
 ```
+
+`scan` inspects three sources and reports them without writing
+anything:
+
+- `~/.ssh/config` — Host stanzas with identity files, including
+  `Include`d files; effective keys are resolved with `ssh -G`
+- your global gitconfig — `include` and `includeIf` chains are
+  followed recursively across `~/.gitconfig` and
+  `~/.config/git/config`
+- git repositories on disk — a depth-limited walk of your home
+  directory (`--dir` to change the root, `--depth` to tune it,
+  `--no-repos` to skip) reads each repo's local identity and remote
+
+Repos connect the pieces: a repo cloned through a host alias adopts
+that account's email, and its directory joins the proposed mapping.
+Repos whose identity matches no account are listed separately.
 
 ## Interactive TUI
 
@@ -132,6 +149,7 @@ Navigation is keyboard-first and the same on every screen:
   - `Create` — `Both Profile` (git identity + SSH key in one flow),
     `SSH Profile`, or `Git Profile`
   - `Run Doctor` — diagnose the setup
+  - `Scan & Import` — detect an existing setup and migrate it
   - `Exit`
 
 Creation forms only ask for what matters (name, comment, provider,
@@ -156,6 +174,7 @@ internal packages and sync pipeline as the CLI.
 | `gpm apply [username]` | Pin an identity into the current repo |
 | `gpm sync` | Regenerate all managed config |
 | `gpm doctor [--fix] [--network]` | Diagnose and repair |
+| `gpm scan [--dir] [--depth] [--no-repos]` | Read-only report of an existing setup |
 | `gpm import [--dry-run]` | Adopt an existing multi-account setup |
 | `gpm guard install/remove` | Pre-commit wrong-identity protection |
 | `gpm completion bash\|zsh\|fish\|powershell` | Shell completions |

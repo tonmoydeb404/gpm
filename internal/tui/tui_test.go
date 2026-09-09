@@ -589,7 +589,7 @@ func TestTUIExitViaMenu(t *testing.T) {
 	tm := startProgram(t, config.New())
 
 	waitOutput(t, tm, "Exit")
-	menuDown(tm, 4)
+	menuDown(tm, 5)
 	press(tm, tea.KeyEnter) // Exit
 	tm.WaitFinished(t, teatest.WithFinalTimeout(5*time.Second))
 }

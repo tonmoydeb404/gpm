@@ -11,6 +11,7 @@ import (
 	"github.com/tonmoydeb/gpm/internal/config"
 	"github.com/tonmoydeb/gpm/internal/dirs"
 	"github.com/tonmoydeb/gpm/internal/gitprofile"
+	"github.com/tonmoydeb/gpm/internal/importer"
 	"github.com/tonmoydeb/gpm/internal/sshkey"
 	"github.com/tonmoydeb/gpm/internal/sshprofile"
 )
@@ -31,6 +32,7 @@ const (
 	fkBothCreate
 	fkDirAdd
 	fkDirRemove
+	fkScanImport
 )
 
 // formState holds the variables huh fields bind to, plus the context
@@ -45,9 +47,10 @@ type formState struct {
 	removeKey bool
 
 	// context
-	editName string // ssh profile being edited
-	editUser string // git username being edited
-	pick     string // provider host or directory pending removal
+	editName string   // ssh profile being edited
+	editUser string   // git username being edited
+	pick     string   // provider host or directory pending removal
+	picks    []string // usernames selected for import
 }
 
 // tuiKeymap is huh's default keymap with esc added as a form abort
@@ -218,8 +221,64 @@ func (m *Model) applyForm(kind formKind, s *formState) (stay bool, cmd tea.Cmd) 
 			return true, nil
 		}
 		return false, m.scheduleSave(intentStay, "directory removed")
+
+	case fkScanImport:
+		return m.applyScanImport(s)
 	}
 	return false, nil
+}
+
+// applyScanImport imports the selected candidates into the config.
+// On the first failure the form stays open with the error; on success
+// the save+sync pipeline runs and the outcome screen lists what was
+// imported.
+func (m *Model) applyScanImport(s *formState) (stay bool, cmd tea.Cmd) {
+	if len(s.picks) == 0 {
+		m.setStatus(true, "nothing selected")
+		return false, nil
+	}
+	var (
+		lines []string
+		notes []string
+	)
+	for _, c := range m.report.Fresh(m.cfg) {
+		if !slicesContains(s.picks, c.Username) {
+			continue
+		}
+		note, err := importer.Apply(m.cfg, c)
+		if err != nil {
+			m.setStatus(false, err.Error())
+			return true, nil
+		}
+		line := fmt.Sprintf("%s — %s", c.Username, c.Email)
+		if c.Email == "" {
+			line = fmt.Sprintf("%s — (ssh only)", c.Username)
+		}
+		lines = append(lines, line)
+		if note != "" {
+			notes = append(notes, note)
+		}
+	}
+	m.outcome = &createOutcome{
+		Title:    fmt.Sprintf("Imported %d account(s)", len(lines)),
+		Lines:    lines,
+		NextStep: "Run Doctor to verify the migrated setup.",
+	}
+	statusMsg := fmt.Sprintf("%d account(s) imported", len(lines))
+	if len(notes) > 0 {
+		statusMsg = fmt.Sprintf("%d account(s) imported — some need an email later", len(lines))
+	}
+	return false, m.scheduleSave(intentSuccess, statusMsg)
+}
+
+// slicesContains reports whether list contains s.
+func slicesContains(list []string, s string) bool {
+	for _, v := range list {
+		if v == s {
+			return true
+		}
+	}
+	return false
 }
 
 // applyBoth runs the combined onboarding: a Git profile and an SSH
@@ -432,6 +491,8 @@ func (m *Model) buildFormScreen(kind formKind, s *formState) screen {
 		return m.dirAddScreen(s)
 	case fkDirRemove:
 		return m.dirRemoveScreen(s)
+	case fkScanImport:
+		return m.scanImportScreen(s)
 	}
 	return screen{kind: kindForm}
 }
@@ -650,6 +711,41 @@ func (m *Model) dirAddScreen(s *formState) screen {
 // openDirRemove confirms removing a directory mapping.
 func (m *Model) openDirRemove(username, path string) tea.Cmd {
 	return m.push(m.dirRemoveScreen(&formState{editUser: username, pick: path}))
+}
+
+// openScanImport builds the multi-select of detected accounts.
+func (m *Model) openScanImport() tea.Cmd {
+	if m.report == nil {
+		m.setStatus(false, "run a scan first")
+		return nil
+	}
+	fresh := m.report.Fresh(m.cfg)
+	if len(fresh) == 0 {
+		m.setStatus(true, "nothing new to import")
+		return nil
+	}
+	return m.push(m.scanImportScreen(&formState{}))
+}
+
+// scanImportScreen asks which detected accounts to import.
+func (m *Model) scanImportScreen(s *formState) screen {
+	fresh := m.report.Fresh(m.cfg)
+	options := make([]huh.Option[string], 0, len(fresh))
+	for _, c := range fresh {
+		label := fmt.Sprintf("%s (%s)", c.Username, c.Email)
+		if c.Email == "" {
+			label = fmt.Sprintf("%s (ssh only)", c.Username)
+		}
+		options = append(options, huh.Option[string]{Key: label, Value: c.Username}.Selected(true))
+	}
+	return formScreen(fkScanImport, s, huh.NewForm(
+		huh.NewGroup(
+			huh.NewMultiSelect[string]().Title("Accounts to import").
+				Description("Candidates with an unknown email import the SSH side only.").
+				Options(options...).
+				Value(&s.picks),
+		),
+	), "Import accounts")
 }
 
 func (m *Model) dirRemoveScreen(s *formState) screen {

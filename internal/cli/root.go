@@ -48,6 +48,7 @@ func NewRootCmd() *cobra.Command {
 		newCurrentCmd(),
 		newSyncCmd(),
 		newDoctorCmd(),
+		newScanCmd(),
 		newImportCmd(),
 		newGuardCmd(),
 		newPrecommitCmd(),
